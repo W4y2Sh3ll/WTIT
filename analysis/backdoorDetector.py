@@ -7,7 +7,7 @@ log = logging.getLogger(__name__)
 
 def getBackdoors(binary_name):
 
-    winFunctions = {}
+    winFunctions = []
 
     # Initilizing r2 with with function call refs (aac)
     r2 = r2pipe.open(binary_name)
@@ -26,7 +26,7 @@ def getBackdoors(binary_name):
             ]
             for ref in refs:
                 if "fcn_name" in ref:
-                    winFunctions[ref["fcn_name"]] = ref
+                    winFunctions.append(ref)
 
     # Check for function that reads flag.txt
     # Then prints flag.txt to STDOUT
@@ -42,9 +42,9 @@ def getBackdoors(binary_name):
             refs = [func for func in json.loads(r2.cmd("axtj @ {}".format(address)))]
             for ref in refs:
                 if "fcn_name" in ref:
-                    winFunctions[ref["fcn_name"]] = ref
+                    winFunctions.append(ref)
 
-    for k, v in list(winFunctions.items()):
-        log.info("[+] Found win function {}".format(k))
+    for k in winFunctions:
+        log.info("[+] Found win function {}".format(k["fcn_name"]))
 
     return winFunctions

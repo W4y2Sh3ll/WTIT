@@ -8,6 +8,7 @@ from analysis import inputDetector
 from analysis import protectionDetector
 from analysis import backdoorDetector
 from analysis import overflowDetector_static
+from analysis import overflowDetector_dynamic
 from exploits import ret2backdoor
 
 logging.basicConfig()
@@ -28,20 +29,21 @@ def main():
     binary_file_path = os.path.abspath(args.file)
     input_funcs = inputDetector.getInputFuncs(binary_file_path)
     properties = protectionDetector.getProperties(binary_file_path)
-    overflow_list = overflowDetector_static.analysis(binary_file_path,
-                                                     input_funcs)
+    # overflow_list = overflowDetector_static.analysis(binary_file_path,
+    #                                                  input_funcs)
     backdoors = backdoorDetector.getBackdoors(binary_file_path)
-    if overflow_list is not None:
-        log.info("[+] Overflow exist")
-        if backdoors is not None:
-            payload = ret2backdoor.exploit(binary_file_path, overflow_list,
-                                           backdoors)
+    # if overflow_list is not None:
+    #     log.info("[+] Overflow exist")
+    #     if backdoors is not None:
+    #         payload = ret2backdoor.exploit(binary_file_path, overflow_list,
+    #                                        backdoors)
+    ep = overflowDetector_dynamic.analysis(binary_file_path)
+    import IPython
+    IPython.embed()
+    print("1")
     
-    context.log_level='debug'
-    p = process(binary_file_path)
-    p.sendline(payload)
-    p.sendline('ls')
-    p.interactive()
+    
+
 
 
 if __name__ == "__main__":
