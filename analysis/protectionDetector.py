@@ -13,5 +13,7 @@ def getProperties(binary_name):
     properties["pie"] = binary.pie
     properties["plt"] = binary.plt
     properties["relro"] = binary.relro
+    if "Has RWX segments" in binary.checksec():
+        properties['RWX'] = True
 
     return properties

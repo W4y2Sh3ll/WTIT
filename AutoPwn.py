@@ -10,6 +10,8 @@ from analysis import backdoorDetector
 from analysis import overflowDetector_static
 from analysis import overflowDetector_dynamic
 from exploits import ret2backdoor
+from exploits import stackRop
+from exploits import stackShellcode
 
 logging.basicConfig()
 logging.root.setLevel(logging.INFO)
@@ -30,18 +32,22 @@ def main():
     input_funcs = inputDetector.getInputFuncs(binary_file_path)
     properties = protectionDetector.getProperties(binary_file_path)
     backdoors = backdoorDetector.getBackdoors(binary_file_path)
-    # overflow_list = overflowDetector_static.analysis(binary_file_path,
-    #                                                  input_funcs)
-    # if overflow_list is not None:
-    #     log.info("[+] Overflow exist")
-    #     if backdoors is not None:
-    #         payload = ret2backdoor.exploit(binary_file_path, overflow_list,
-    #                                        backdoors)
-    #         for p in range(len(payload)):
-    #             with open('exp_%s' % p, 'wb') as f:
-    #                 f.write(payload[p])
-    exploitable_state = overflowDetector_dynamic.analysis(binary_file_path)
-    ret2backdoor.exploit_dynamic(exploitable_state,backdoors)
+    overflow_list = overflowDetector_static.analysis(binary_file_path,
+                                                     input_funcs)
+    if len(overflow_list) > 0:
+        log.info("[+] Overflow exist")
+        if len(backdoors) > 0:
+            payload = ret2backdoor.exploit(binary_file_path, overflow_list,
+                                           backdoors)
+            for p in range(len(payload)):
+                with open('exp_%s' % p, 'wb') as f:
+                    f.write(payload[p])
+        elif properties['RWX']:
+            stackShellcode.exploit(binary_file_path,properties)
+        else:
+            stackRop
+    # exploitable_state = overflowDetector_dynamic.analysis(binary_file_path)
+    # ret2backdoor.exploit_dynamic(exploitable_state,backdoors)
     import IPython
     IPython.embed()
     
