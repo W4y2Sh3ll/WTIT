@@ -30,7 +30,7 @@ def getBackdoors(binary_name):
 
     # Check for function that reads flag.txt
     # Then prints flag.txt to STDOUT
-    known_flag_names = ["flag", "pass"]
+    known_flag_names = ["flag", "pass", "secret"]
 
     strings = [string for string in json.loads(r2.cmd("izj"))]
     for string in strings:
