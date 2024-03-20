@@ -29,7 +29,7 @@ def analysis(binary_name,input_funcs):
                         disassembly = r2.cmd("pdr").split("\n")
                         for line in disassembly[2:]:
                             if ';' in line:
-                                buf_name = line.split(' ')[4]
+                                buf_name = line.split('*')[1].split(' ')[0]
                                 buf_size = int(line.split('-')[1],16)
                                 input_list.append({'name':buf_name,'buf_size':buf_size,'func':'read'})
                             else:

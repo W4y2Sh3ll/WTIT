@@ -70,8 +70,6 @@ def main(binary):
         sm.step()
         if len(sm.unconstrained) > 0:
             l.info("found some unconstrained states, checking exploitability")
-            import IPython
-            IPython.embed()
             for u in sm.unconstrained:
                 if fully_symbolic(u, u.regs.pc):
                     exploitable_state = u
