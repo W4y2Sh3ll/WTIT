@@ -38,8 +38,6 @@ def analysis(binary_name,input_funcs):
                             if '[' in line:
                                 for dic in input_list:
                                     if dic['name'] in line:
-                                        import IPython
-                                        IPython.embed()
                                         dic['read_size']=int(disassembly[i+1].split(', ')[1].split(' ')[0],16)
                                         dic['addr']=int(disassembly[i+4].split(' ')[1],16)
                         for dic in input_list:

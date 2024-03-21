@@ -39,6 +39,4 @@ def analysis(binary):
             # no exploitable state found, drop them
             sm.drop(stash='unconstrained')
     l.info("found a state which looks exploitable")
-    import IPython
-    IPython.embed()
     return exploitable_state

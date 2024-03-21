@@ -79,4 +79,4 @@ def ret2backdoorTest():
     print("run with `(cat %s; cat -) | %s`" % (filename, binary_file_path))
             
 if __name__ == "__main__":
-    ret2backdoorTest()
+    stackShellcodeTest()
