@@ -18,8 +18,6 @@ def fully_symbolic(state, variable):
 
 def analysis(binary):
     p = angr.Project(binary)
-
-
     extras = {so.REVERSE_MEMORY_NAME_MAP, so.TRACK_ACTION_HISTORY}
     es = p.factory.entry_state(add_options=extras)
     sm = p.factory.simulation_manager(es, save_unconstrained=True)

@@ -1,48 +1,55 @@
 import r2pipe
 import json
 
-def analysis(binary_name,input_funcs):
-    r2 = r2pipe.open(binary_name)
+def analysis(binary_name,input_funcs,properties):
+    r2 = r2pipe.open(binary_name,flags = ["-d"])
     r2.cmd("aaa")
 
     functions = [func for func in json.loads(r2.cmd("aflj"))]
     input_list = []
     overflow_list = []
-    # Check for function that gives us system(/bin/sh)
+    used_input_func = []
     for func in functions:
         for input_func in input_funcs:
             if input_func in func['name']:
+                used_input_func.append(func)
                 # Get XREFs
-                refs = [
-                    func for func in json.loads(r2.cmd("axtj @ {}".format(func['name'])))
-                ]
-                if 'gets' in input_func:
-                    for ref in refs:
-                        overflow_list.append({'addr':ref['from'],'func':'gets'})
-                if 'read' in input_func:
-                    analysed_func=[]
-                    for ref in refs:
-                        if ref['fcn_name'] in analysed_func:
-                            continue
-                        r2.cmd("s {}".format(ref['fcn_name']))
-                        analysed_func.append(ref['fcn_name'])
-                        disassembly = r2.cmd("pdr").split("\n")
-                        for line in disassembly[2:]:
-                            if ';' in line:
-                                buf_name = line.split('*')[1].split(' ')[0]
-                                buf_size = int(line.split('-')[1],16)
-                                input_list.append({'name':buf_name,'buf_size':buf_size,'func':'read'})
-                            else:
-                                break
-                        for i,line in enumerate(disassembly):
-                            if '[' in line:
-                                for dic in input_list:
-                                    if dic['name'] in line:
-                                        dic['read_size']=int(disassembly[i+1].split(', ')[1].split(' ')[0],16)
-                                        dic['addr']=int(disassembly[i+4].split(' ')[1],16)
-                        for dic in input_list:
-                            if dic['read_size']>dic['buf_size']:
-                                overflow_list.append(dic)
+    for func in used_input_func:
+        refs = [
+            func for func in json.loads(r2.cmd("axtj @ {}".format(func['name'])))
+        ]
+        for ref in refs:
+            call_addr=ref['from']
+            # if properties['pie']:
+            #     call_addr+=json.loads(r2.cmd("ij"))['bin']['baddr']
+            r2.cmd('db {}'.format(call_addr))
+            r2.cmd('dc')
+            while True:
+                pc = int(r2.cmd('dr rip'), 16)  # 获取程序计数器的值
+                if pc == call_addr:
+                    print("Hit stop address, stopping.")
+                    break
+                else:
+                    r2.cmd('dc')
+                    print("Did not hit stop address, continuing.")
+            rdi = r2.cmd('dr rdi')
+            rsi = r2.cmd('dr rsi')
+            rdx = r2.cmd('dr rdx')
+            rbp = r2.cmd('dr rbp')
+            print(rdi,rsi,rdx,rbp)
+            if func['name'] == 'sym.imp.read':
+                if int(rsi,16)+int(rdx,16)>int(rbp,16):
+                    overflow_list.append({'addr':call_addr,'overflow_size':int(rsi,16)+int(rdx,16)-int(rbp,16),'buf_size':int(rbp,16)-int(rsi,16)})
+            elif func['name'] == 'sym.imp.fgets':
+                if int(rdi,16)+int(rsi,16)>int(rbp,16):
+                    overflow_list.append({'addr':call_addr,'overflow_size':int(rsi,16)+int(rdi,16)-int(rbp,16),'buf_size':int(rbp,16)-int(rdi,16)})
+            elif func['name'] == 'sym.imp.__isoc99_scanf':
+                m = r2.cmd('psz @rdi')
+                if("%s" in m):
+                    overflow_list.append({'addr':call_addr,'overflow_size':0x500,'buf_size':int(rbp,16)-int(rsi,16)})
+            elif func['name'] == 'sym.imp.gets':
+                    overflow_list.append({'addr':call_addr,'overflow_size':0x500,'buf_size':int(rbp,16)-int(rdi,16)})
+            r2.cmd("dr")
     return overflow_list
                 
 

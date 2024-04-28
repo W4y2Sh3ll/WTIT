@@ -10,7 +10,7 @@ def getBackdoors(binary_name):
     winFunctions = []
 
     # Initilizing r2 with with function call refs (aac)
-    r2 = r2pipe.open(binary_name)
+    r2 = r2pipe.open(binary_name,flags = ["-d"])
     r2.cmd("aaa")
 
     functions = [func for func in json.loads(r2.cmd("aflj"))]

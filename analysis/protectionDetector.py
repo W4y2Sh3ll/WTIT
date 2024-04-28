@@ -15,5 +15,7 @@ def getProperties(binary_name):
     properties["relro"] = binary.relro
     if "Has RWX segments" in binary.checksec():
         properties['RWX'] = True
+    else:
+        properties['RWX'] = False
 
     return properties
