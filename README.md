@@ -10,7 +10,11 @@ WTIT is only able to finish exploitation of ret2backdoor, ret2shellcode and ret2
 - pwncli
 - ROPGadget
 ## Installation:
-`git clone https://github.com/W4y2Sh3ll/WTIT.git`
+``` shell
+git clone https://github.com/W4y2Sh3ll/WTIT.git
+```
 
 ## Usage
-`./main.py binary_path`
+``` shell
+./main.py binary_path
+```
